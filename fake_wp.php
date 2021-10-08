@@ -7,7 +7,7 @@ define("WP_USE_EXT_MYSQL",false);
 define("OBJECT","OBJECT");
 define("ABSPATH",__DIR__.'/');
 define( 'WPINC', __DIR__.'/' );
-define('MULTISITE', $_POST["multisite"]);
+define('MULTISITE', true);
 define( 'WP_CONTENT_DIR', ABSPATH );
 define( 'WP_CONTENT_URL', '127.0.0.1' );
 define( 'WP_PLUGIN_DIR', WP_CONTENT_DIR . '/plugins' ); // Full path, no trailing slash.
@@ -956,6 +956,95 @@ function trailingslashit( $string ) {
 }
 
 function load_plugin_textdomain( $domain, $deprecated = false, $plugin_rel_path = false ) {
-
     return $domain;
 }
+
+function get_option( $option, $default = false ) {
+    return $default;
+}
+
+function is_main_site( $site_id = null, $network_id = null ) {
+    if ( is_multisite() ) {
+        return true;
+    }
+}
+
+function is_serialized_string( $data ) {
+    // if it isn't a string, it isn't a serialized string.
+    if ( ! is_string( $data ) ) {
+        return false;
+    }
+    $data = trim( $data );
+    if ( strlen( $data ) < 4 ) {
+        return false;
+    } elseif ( ':' !== $data[1] ) {
+        return false;
+    } elseif ( ';' !== substr( $data, -1 ) ) {
+        return false;
+    } elseif ( 's' !== $data[0] ) {
+        return false;
+    } elseif ( '"' !== substr( $data, -2, 1 ) ) {
+        return false;
+    } else {
+        return true;
+    }
+}
+
+function is_serialized( $data, $strict = true ) {
+    // If it isn't a string, it isn't serialized.
+    if ( ! is_string( $data ) ) {
+        return false;
+    }
+    $data = trim( $data );
+    if ( 'N;' === $data ) {
+        return true;
+    }
+    if ( strlen( $data ) < 4 ) {
+        return false;
+    }
+    if ( ':' !== $data[1] ) {
+        return false;
+    }
+    if ( $strict ) {
+        $lastc = substr( $data, -1 );
+        if ( ';' !== $lastc && '}' !== $lastc ) {
+            return false;
+        }
+    } else {
+        $semicolon = strpos( $data, ';' );
+        $brace     = strpos( $data, '}' );
+        // Either ; or } must exist.
+        if ( false === $semicolon && false === $brace ) {
+            return false;
+        }
+        // But neither must be in the first X characters.
+        if ( false !== $semicolon && $semicolon < 3 ) {
+            return false;
+        }
+        if ( false !== $brace && $brace < 4 ) {
+            return false;
+        }
+    }
+    $token = $data[0];
+    switch ( $token ) {
+        case 's':
+            if ( $strict ) {
+                if ( '"' !== substr( $data, -2, 1 ) ) {
+                    return false;
+                }
+            } elseif ( false === strpos( $data, '"' ) ) {
+                return false;
+            }
+            // Or else fall through.
+        case 'a':
+        case 'O':
+            return (bool) preg_match( "/^{$token}:[0-9]+:/s", $data );
+        case 'b':
+        case 'i':
+        case 'd':
+            $end = $strict ? '$' : '';
+            return (bool) preg_match( "/^{$token}:[0-9.E+-]+;$end/", $data );
+    }
+    return false;
+}
+

@@ -50,9 +50,9 @@ class BSR_DB {
 	 */
 	public static function get_tables() {
 		global $wpdb;
-
+		
 		if ( function_exists( 'is_multisite' ) && is_multisite() ) {
-
+			
 			if ( is_main_site() ) {
 				$tables 	= $wpdb->get_col( 'SHOW TABLES' );
 			} else {
@@ -174,7 +174,6 @@ class BSR_DB {
 	 * @return array
 	 */
 	public function srdb( $table, $page, $args ) {
-
 		// Load up the default settings for this chunk.
 		$table 			= esc_sql( $table );
 		$current_page 	= absint( $page );
@@ -183,7 +182,7 @@ class BSR_DB {
 
 		$args['search_for'] 	= str_replace( '#BSR_BACKSLASH#', '\\', $args['search_for'] );
 		$args['replace_with'] 	= str_replace( '#BSR_BACKSLASH#', '\\', $args['replace_with'] );
-
+		
 		$table_report = array(
 			'change' 	=> 0,
 			'updates' 	=> 0,
@@ -260,10 +259,10 @@ class BSR_DB {
 					}
 
 				}
-
+				
 				// Run a search replace on the data that'll respect the serialisation.
 				$edited_data = $this->recursive_unserialize_replace( $args['search_for'], $args['replace_with'], $data_to_fix, false, $args['case_insensitive'] );
-
+				
 				// Something was changed
 				if ( $edited_data != $data_to_fix ) {
 					$update_sql[] = $column . ' = "' . $this->mysql_escape_mimic( $edited_data ) . '"';
@@ -368,9 +367,8 @@ class BSR_DB {
 			}
 
 		} catch( Exception $error ) {
-
+			
 		}
-
 		return $data;
 	}
 

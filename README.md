@@ -62,3 +62,7 @@ did_action() __done__\
 plugin_dir_path() __done__\
 trailingslashit() __quick_fix__; \
 load_plugin_textdomain __quick_fix__; \
+get_option() __quick_fix__; \
+is_main_site() __quick_fix__; \
+is_serialized_string() __done__\
+is_serialized() __done__\
